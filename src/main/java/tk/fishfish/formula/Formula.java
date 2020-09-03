@@ -4,7 +4,7 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
 import org.codehaus.groovy.control.CompilerConfiguration;
-import tk.fishfish.formula.script.FormulaScript;
+import tk.fishfish.formula.script.VariableFormulaScript;
 
 /**
  * 公式
@@ -18,7 +18,7 @@ public final class Formula {
 
     public Formula() {
         CompilerConfiguration cfg = new CompilerConfiguration();
-        cfg.setScriptBaseClass(FormulaScript.class.getName());
+        cfg.setScriptBaseClass(VariableFormulaScript.class.getName());
         shell = new GroovyShell(new Binding(), cfg);
     }
 

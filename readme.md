@@ -2,6 +2,16 @@
 
 > 基于 groovy 实现的公式库
 
+## 依赖
+
+```xml
+<dependency>
+    <groupId>tk.fishfish</groupId>
+    <artifactId>formula</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+</dependency>
+```
+
 ## 语法
 
 ```
@@ -232,14 +242,76 @@ public class FormulaTest {
 
 此时，就存在依赖关系了，即 B 依赖 A
 
-这里未提供代码解决该场景，这里可以给予提示，依赖关系可转化为 
-DAG（有向无环图）计算。
+显然，我们可以将依赖关系可转化为 DAG（有向无环图）计算。
 
-该部分代码暂不开源。
+例如：
+
+- field1 存在 3 条记录，值分别为 1，3，5
+- field2 值为 ABC
+- field3 为 LOWER('#{field2}') 即将 field2 的值转小写
+- field4 为 SUM('#{field1}') 即将 field1 的值做聚合求和
+
+```java
+package tk.fishfish.formula;
+
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tk.fishfish.formula.dag.FormulaData;
+import tk.fishfish.formula.plugin.CustomPlugin;
+import tk.fishfish.formula.script.FormulaScript;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 公式DAG测试
+ * 
+ * @author 奔波儿灞
+ * @since 1.0.0
+ */
+public class DagFormulaEngineTest {
+
+    private static final Logger LOG = LoggerFactory.getLogger(FormulaTest.class);
+
+    private DagFormulaEngine engine;
+
+    @BeforeClass
+    public static void init() {
+        // 安装自己的公式插件
+        FormulaScript.installPlugin(CustomPlugin.class);
+    }
+
+    @Before
+    public void setup() {
+        engine = new DagFormulaEngine(new Formula());
+    }
+
+    @Test
+    public void run() {
+        // 批量计算的公式、数据
+        List<FormulaData> formulaDataList = new ArrayList<FormulaData>() {{
+            add(new FormulaData("field1", 0, null, 1));
+            add(new FormulaData("field1", 1, null, 3));
+            add(new FormulaData("field1", 2, null, 5));
+            add(new FormulaData("field2", -1, null, "ABC"));
+            add(new FormulaData("field3", -1, "LOWER('#{field2}')", null));
+            add(new FormulaData("field4", -1, "SUM('#{field1}')", 0));
+        }};
+        // 计算
+        engine.run(formulaDataList);
+        // 结果
+        formulaDataList.forEach(formulaData ->
+                LOG.info("name: {}, formula: {}, value: {}",
+                        formulaData.getName(), formulaData.getFormula(), formulaData.getValue())
+        );
+    }
+
+}
+```
 
 ### 数据库公式
 
-这个也是业务必备，这里仍不开源。
-
-大家可采用 groovy-sql 或者 JdbcTemplate
-实现即可。
+大家可采用 groovy-sql 或者 JdbcTemplate 实现即可。
