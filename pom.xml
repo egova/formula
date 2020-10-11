@@ -161,4 +161,17 @@
         </plugins>
     </build>
 
+    <distributionManagement>
+        <repository>
+            <id>oss-nexus-releases</id>
+            <name>oss nexus-releases</name>
+            <url>https://oss.sonatype.org/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>oss-nexus-snapshot</id>
+            <name>oss nexus-snapshot</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
 </project>
