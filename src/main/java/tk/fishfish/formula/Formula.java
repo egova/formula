@@ -46,4 +46,16 @@ public final class Formula {
         return script.run();
     }
 
+    /**
+     * 运行java代码块
+     *
+     * @param javaCode java代码块
+     * @param binding  绑定上下文
+     * @return 结果
+     */
+    public Object runJava(String javaCode, Binding binding) {
+        GroovyShell shell = new GroovyShell(binding);
+        return shell.evaluate(javaCode);
+    }
+
 }

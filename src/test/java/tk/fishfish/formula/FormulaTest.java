@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import tk.fishfish.formula.plugin.CustomPlugin;
 import tk.fishfish.formula.script.FormulaScript;
 
+import java.util.Date;
+
 /**
  * 公式测试
  *
@@ -25,7 +27,7 @@ public class FormulaTest {
     @BeforeClass
     public static void init() {
         // 安装自己的公式插件
-         FormulaScript.installPlugin(CustomPlugin.class);
+        FormulaScript.installPlugin(CustomPlugin.class);
     }
 
     @Before
@@ -57,6 +59,18 @@ public class FormulaTest {
         binding.setVariable("xxx", "ABC");
         Object result = formula.run("LOWER(xxx)", binding);
         Assert.assertEquals("abc", result);
+    }
+
+    @Test
+    public void runJava() {
+        Binding binding = new Binding();
+        binding.setVariable("value", new Date());
+        Object result = formula.runJava("import java.text.SimpleDateFormat;\n" +
+                "SimpleDateFormat format = new SimpleDateFormat(\"yyyy年MM月dd日\");\n" +
+                // 这里通过上下文传入value为当前时间，代码块中可直接使用
+                // 最后一行的结果做为返回值
+                "format.format(value);", binding);
+        LOG.info("result: {}", result);
     }
 
 }

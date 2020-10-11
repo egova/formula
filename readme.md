@@ -8,7 +8,7 @@
 <dependency>
     <groupId>tk.fishfish</groupId>
     <artifactId>formula</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>最新版本</version>
 </dependency>
 ```
 
@@ -315,3 +315,55 @@ public class DagFormulaEngineTest {
 ### 数据库公式
 
 大家可采用 groovy-sql 或者 JdbcTemplate 实现即可。
+
+### 动态运行Java代码块
+
+可直接执行 java 代码块。
+
+```java
+package tk.fishfish.formula;
+
+import groovy.lang.Binding;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Date;
+
+/**
+ * 公式测试
+ *
+ * @author 奔波儿灞
+ * @since 1.0
+ */
+public class FormulaTest {
+
+    private static final Logger LOG = LoggerFactory.getLogger(FormulaTest.class);
+
+    private Formula formula;
+
+    @Before
+    public void setup() {
+        formula = new Formula();
+    }
+
+    @Test
+    public void runJava() {
+        Binding binding = new Binding();
+        binding.setVariable("value", new Date());
+        Object result = formula.runJava("import java.text.SimpleDateFormat;\n" +
+                "SimpleDateFormat format = new SimpleDateFormat(\"yyyy年MM月dd日\");\n" +
+                // 这里通过上下文传入value为当前时间，代码块中可直接使用
+                // 最后一行的结果做为返回值
+                "format.format(value);", binding);
+        LOG.info("result: {}", result);
+    }
+
+}
+```
+
+其中：
+
+- 通过上下文传入变量，代码块中可直接使用
+- 最后一行的结果做为返回值
