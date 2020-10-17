@@ -6,11 +6,11 @@
 
     <groupId>tk.fishfish</groupId>
     <artifactId>formula</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1.RELEASE</version>
     <packaging>jar</packaging>
 
     <name>formula</name>
-    <url>https://github.com/xuanbo/formula</url>
+    <url>https://github.com/egova/formula</url>
     <description>formula scripts base on groovy</description>
 
     <licenses>
@@ -23,8 +23,8 @@
 
     <scm>
         <url>http://fishfish.tk</url>
-        <connection>scm:git:https://github.com/xuanbo/formula</connection>
-        <developerConnection>scm:git:https://github.com/xuanbo/formula</developerConnection>
+        <connection>scm:git:https://github.com/egova/formula</connection>
+        <developerConnection>scm:git:https://github.com/egova/formula</developerConnection>
     </scm>
 
     <developers>
