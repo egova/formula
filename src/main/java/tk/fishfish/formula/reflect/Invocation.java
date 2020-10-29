@@ -14,11 +14,13 @@ public class Invocation {
     private final Method method;
     private final Object target;
     private final int parameterCount;
+    private final Class<?>[] parameterTypes;
 
     public Invocation(Method method, Object target) {
         this.method = method;
         this.target = target;
         this.parameterCount = method.getParameterCount();
+        this.parameterTypes = method.getParameterTypes();
     }
 
     public Object invoke(Object[] args) throws InvocationTargetException, IllegalAccessException {
@@ -26,9 +28,14 @@ public class Invocation {
         if (this.parameterCount == 0) {
             return method.invoke(target);
         }
-        // 如果方法只有一个参数，则将参数数组作为一个值传递
+        // 如果方法只有一个参数
         if (this.parameterCount == 1) {
-            return method.invoke(target, new Object[]{args});
+            // 如果是数组（不定数组），则作为一个参数传递
+            if (parameterTypes[0] == Object[].class) {
+                return method.invoke(target, new Object[]{args});
+            }
+            // 不是数组，则取第一个值传递
+            return method.invoke(target, args == null || args.length == 0 ? null : args[0]);
         }
         // 如果方法有多个参数，则将参数数组传递，按位匹配
         return method.invoke(target, args);
