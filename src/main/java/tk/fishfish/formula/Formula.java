@@ -19,7 +19,7 @@ public final class Formula {
     public Formula() {
         CompilerConfiguration cfg = new CompilerConfiguration();
         cfg.setScriptBaseClass(VariableFormulaScript.class.getName());
-        shell = new GroovyShell(new Binding(), cfg);
+        shell = new GroovyShell(Formula.class.getClassLoader(), new Binding(), cfg);
     }
 
     /**
