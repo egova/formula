@@ -31,7 +31,7 @@ public class Invocation {
         // 如果方法只有一个参数
         if (this.parameterCount == 1) {
             // 如果是数组（不定数组），则作为一个参数传递
-            if (parameterTypes[0] == Object[].class) {
+            if (parameterTypes[0].isArray()) {
                 return method.invoke(target, new Object[]{args});
             }
             // 不是数组，则取第一个值传递

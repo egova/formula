@@ -1,10 +1,17 @@
 package tk.fishfish.formula;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
+import groovy.lang.GroovyClassLoader;
 import groovy.lang.Script;
 import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.runtime.EncodingGroovyMethods;
+import org.codehaus.groovy.runtime.InvokerHelper;
+import tk.fishfish.formula.exception.FormulaException;
 import tk.fishfish.formula.script.VariableFormulaScript;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * 公式
@@ -14,12 +21,16 @@ import tk.fishfish.formula.script.VariableFormulaScript;
  */
 public final class Formula {
 
-    private final GroovyShell shell;
+    private final CompilerConfiguration cfg;
+    private final Cache<String, Class<Script>> scriptCache;
 
     public Formula() {
-        CompilerConfiguration cfg = new CompilerConfiguration();
+        cfg = new CompilerConfiguration();
         cfg.setScriptBaseClass(VariableFormulaScript.class.getName());
-        shell = new GroovyShell(Formula.class.getClassLoader(), new Binding(), cfg);
+        scriptCache = CacheBuilder.newBuilder()
+                .maximumSize(1024)
+                .expireAfterWrite(5, TimeUnit.MINUTES)
+                .build();
     }
 
     /**
@@ -29,8 +40,7 @@ public final class Formula {
      * @return 结果
      */
     public Object run(String scriptText) {
-        Script script = shell.parse(scriptText);
-        return script.run();
+        return run(scriptText, new Binding());
     }
 
     /**
@@ -40,9 +50,20 @@ public final class Formula {
      * @param binding    绑定上下文
      * @return 结果
      */
+    @SuppressWarnings("unchecked")
     public Object run(String scriptText, Binding binding) {
-        Script script = shell.parse(scriptText);
-        script.setBinding(binding);
+        Class<Script> scriptClass;
+        try {
+            String key = EncodingGroovyMethods.md5(scriptText);
+            scriptClass = scriptCache.get(key, () -> {
+                // 创建一个新的GroovyClassLoader，防止共用一个类导致无法卸载class
+                GroovyClassLoader classLoader = new GroovyClassLoader(VariableFormulaScript.class.getClassLoader(), cfg);
+                return classLoader.parseClass(scriptText);
+            });
+        } catch (Exception e) {
+            throw new FormulaException("加载缓存失败", e);
+        }
+        Script script = InvokerHelper.createScript(scriptClass, binding);
         return script.run();
     }
 
@@ -53,9 +74,21 @@ public final class Formula {
      * @param binding  绑定上下文
      * @return 结果
      */
+    @SuppressWarnings("unchecked")
     public Object runJava(String javaCode, Binding binding) {
-        GroovyShell shell = new GroovyShell(binding);
-        return shell.evaluate(javaCode);
+        Class<Script> scriptClass;
+        try {
+            String key = EncodingGroovyMethods.md5(javaCode);
+            scriptClass = scriptCache.get(key, () -> {
+                // 创建一个新的GroovyClassLoader，防止共用一个类导致无法卸载class
+                GroovyClassLoader classLoader = new GroovyClassLoader(VariableFormulaScript.class.getClassLoader(), cfg);
+                return classLoader.parseClass(javaCode);
+            });
+        } catch (Exception e) {
+            throw new FormulaException("加载缓存失败", e);
+        }
+        Script script = InvokerHelper.createScript(scriptClass, binding);
+        return script.evaluate(javaCode);
     }
 
 }
